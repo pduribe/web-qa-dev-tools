@@ -1028,7 +1028,7 @@ If a brief varies from that shape, you can still edit the generated HTML manuall
     function buildArticleHtml(parsed) {
       const finalTitle = parsed.dev["Final Title"] || parsed.brief["Prospective Title"] || parsed.brief["Content Topic"] || "Untitled Article";
       const slug = slugify(finalTitle);
-      const cid = (els.slugPrefix.value || "").trim() + slug;
+      const cid = ((els.slugPrefix.value || "").trim() + slug).toLowerCase();
       const dateParts = parseBriefDate(parsed.dev["Live Date"]);
       const displayDate = formatDisplayDate(dateParts);
       const isoDate = formatIsoDate(dateParts);
