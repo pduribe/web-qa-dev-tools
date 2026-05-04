@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brief to Markup Tool</title>
+  <style>
+    :root {
+      --bg: #eef2f6;
+      --panel: #f8fafc;
+      --panel-strong: #fff;
+      --ink: #172033;
+      --muted: #5f6b7a;
+      --line: #cbd5e1;
+      --accent: #0f766e;
+      --accent-deep: #134e4a;
+      --accent-warm: #d65f36;
+      --success: #147a4f;
+      --shadow: 0 14px 32px rgba(15, 23, 42, 0.1);
+      --radius: 8px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --sans: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, 0.08), transparent 42%),
+        linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1240px, calc(100vw - 32px));
+      margin: 28px auto 40px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero {
+      background: var(--panel);
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      display: none;
+    }
+
+    .eyebrow {
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--accent-deep);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(24px, 4vw, 36px);
+      line-height: 1.05;
+      letter-spacing: 0;
+      max-width: none;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 64ch;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 19px;
+      letter-spacing: 0;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label,
+    .subhead {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+      margin-bottom: 8px;
+    }
+
+    .field input[type="file"],
+    .field input[type="text"],
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-strong);
+      padding: 12px 14px;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .hint,
+    .status {
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .status {
+      min-height: 20px;
+      margin-top: 6px;
+    }
+
+    .status.success {
+      color: var(--success);
+    }
+
+    .status.error {
+      color: #9a2c2c;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    button.secondary {
+      background: #ead8ca;
+      color: var(--ink);
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--accent-deep);
+      border: 1px solid rgba(127, 47, 19, 0.18);
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      margin-top: 18px;
+    }
+
+    .summary-card {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .summary-card strong {
+      display: block;
+      font-size: 22px;
+      margin-top: 4px;
+      letter-spacing: 0;
+    }
+
+    .workspace {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .tab-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #243244;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .tab.active {
+      background: #fff;
+      border-color: rgba(15, 23, 42, 0.14);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    }
+
+    .card {
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.82);
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-head h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      border-radius: 16px;
+      background: #111827;
+      color: #e5eef7;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.55;
+      max-height: 620px;
+    }
+
+    .preview-shell {
+      border-radius: 18px;
+      background: #fff;
+      padding: clamp(20px, 4vw, 36px);
+      min-height: 280px;
+    }
+
+    .preview-shell .blog-title {
+      margin: 0 0 20px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .preview-shell h2,
+    .preview-shell h3 {
+      margin: 28px 0 12px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .preview-shell p,
+    .preview-shell li {
+      color: #2b241f;
+      line-height: 1.72;
+      font-size: 16px;
+    }
+
+    .preview-shell ul {
+      padding-left: 22px;
+    }
+
+    .kv {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .kv-item {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .kv-item .label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--accent-deep);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero panel">
+      <div class="eyebrow">Upload Brief</div>
+      <h1>DOCX to article markup.</h1>
+      <p>Drop in a Word brief, pull out the title, body, SEO fields, and JSON-LD, then copy the generated markup. This is tuned for briefs structured like your attached Summer Dresses example.</p>
+    </section>
+
+    <section class="layout">
+      <aside class="panel controls">
+        <h2 class="section-title">Brief Controls</h2>
+
+        <div class="field">
+          <label for="briefFile">Word Brief</label>
+          <input id="briefFile" type="file" accept=".docx" />
+        </div>
+
+        <div class="field">
+          <label for="slugPrefix">CID Prefix</label>
+          <input id="slugPrefix" type="text" value="styleguide-" />
+        </div>
+
+        <div class="field">
+          <label for="heroFolder">Hero Folder</label>
+          <input id="heroFolder" type="text" value="2026/lp/styleguide/" />
+        </div>
+
+        <div class="field">
+          <label for="heroImagePath">Hero Image Path</label>
+          <input id="heroImagePath" type="text" placeholder="Auto: 05/02/dresses-desk.jpg" />
+        </div>
+
+        <div class="button-row">
+          <button class="primary" id="parseBtn" type="button">Parse Brief</button>
+          <button class="secondary" id="loadSampleBtn" type="button">Choose Brief</button>
+          <button class="ghost" id="copyHtmlBtn" type="button">Copy HTML</button>
+          <button class="ghost" id="copyMetaBtn" type="button">Copy Meta</button>
+        </div>
+
+        <p class="status" id="status">Choose a `.docx` brief to start.</p>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="subhead">Sections</div>
+            <strong id="sectionCount">0</strong>
+          </div>
+          <div class="summary-card">
+            <div class="subhead">Bullets</div>
+            <strong id="bulletCount">0</strong>
+          </div>
+          <div class="summary-card">
+            <div class="subhead">Links</div>
+            <strong id="linkCount">0</strong>
+          </div>
+          <div class="summary-card">
+            <div class="subhead">Slug</div>
+            <strong id="slugPreview">-</strong>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:18px;">
+          <label for="notes">Notes</label>
+          <textarea id="notes" readonly>The parser assumes:
+- the brief is a .docx file
+- key/value metadata is stored in 2-column tables
+- body headings look like H1:, H2:, or H3:
+- list items are Word bullets/numbered rows
+
+If a brief varies from that shape, you can still edit the generated HTML manually.</textarea>
+        </div>
+      </aside>
+
+      <section class="panel workspace">
+        <div class="tab-row">
+          <button class="tab active" type="button" data-tab="preview">Preview</button>
+          <button class="tab" type="button" data-tab="html">HTML</button>
+          <button class="tab" type="button" data-tab="meta">SEO / Meta</button>
+          <button class="tab" type="button" data-tab="parsed">Parsed Brief</button>
+        </div>
+
+        <section class="card tab-panel" data-panel="preview">
+          <div class="card-head">
+            <h2>Article Preview</h2>
+          </div>
+          <div class="card-body">
+            <div class="preview-shell" id="previewPane">
+              <p class="hint">Your parsed article will render here.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card tab-panel hidden" data-panel="html">
+          <div class="card-head">
+            <h2>Generated HTML</h2>
+          </div>
+          <div class="card-body">
+            <pre id="htmlOutput"></pre>
+          </div>
+        </section>
+
+        <section class="card tab-panel hidden" data-panel="meta">
+          <div class="card-head">
+            <h2>SEO / Meta</h2>
+          </div>
+          <div class="card-body">
+            <div class="kv" id="metaSummary"></div>
+            <div style="height:16px;"></div>
+            <pre id="metaOutput"></pre>
+          </div>
+        </section>
+
+        <section class="card tab-panel hidden" data-panel="parsed">
+          <div class="card-head">
+            <h2>Parsed Brief Data</h2>
+          </div>
+          <div class="card-body">
+            <pre id="parsedOutput"></pre>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    const state = {
+      parsed: null,
+      html: "",
+      meta: ""
+    };
+
+    const els = {
+      file: document.getElementById("briefFile"),
+      slugPrefix: document.getElementById("slugPrefix"),
+      heroFolder: document.getElementById("heroFolder"),
+      heroImagePath: document.getElementById("heroImagePath"),
+      parseBtn: document.getElementById("parseBtn"),
+      loadSampleBtn: document.getElementById("loadSampleBtn"),
+      copyHtmlBtn: document.getElementById("copyHtmlBtn"),
+      copyMetaBtn: document.getElementById("copyMetaBtn"),
+      status: document.getElementById("status"),
+      sectionCount: document.getElementById("sectionCount"),
+      bulletCount: document.getElementById("bulletCount"),
+      linkCount: document.getElementById("linkCount"),
+      slugPreview: document.getElementById("slugPreview"),
+      previewPane: document.getElementById("previewPane"),
+      htmlOutput: document.getElementById("htmlOutput"),
+      metaOutput: document.getElementById("metaOutput"),
+      parsedOutput: document.getElementById("parsedOutput"),
+      metaSummary: document.getElementById("metaSummary"),
+      tabs: Array.from(document.querySelectorAll(".tab")),
+      panels: Array.from(document.querySelectorAll(".tab-panel"))
+    };
+
+    function setStatus(message, kind) {
+      els.status.textContent = message;
+      els.status.className = "status" + (kind ? " " + kind : "");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"]/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;"
+      }[char]));
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+
+    function slugify(value) {
+      return String(value || "")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/&/g, " and ")
+        .replace(/[^\w\s-]/g, " ")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    function inferCgidFromUrl(rawUrl) {
+      const href = String(rawUrl || "").trim();
+      if (!href) return "";
+
+      let pathname = "";
+      try {
+        const url = new URL(href, location.origin);
+        pathname = url.pathname.replace(/\/+$/, "").toLowerCase();
+      } catch {
+        return "";
+      }
+
+      const cgidOverrides = {
+        "/womens/dresses": "womens-dresses",
+        "/womens/dresses/mini": "babydoll",
+        "/womens/dresses/maxi": "maxi-dresses",
+        "/style-guide": "style-guide"
+      };
+
+      if (cgidOverrides[pathname]) return cgidOverrides[pathname];
+      const parts = pathname.split("/").filter(Boolean);
+      return parts[parts.length - 1] || "";
+    }
+
+    function buildGeneratedHref(rawUrl) {
+      const href = String(rawUrl || "").trim();
+      if (!href) return "#";
+
+      try {
+        const url = new URL(href, location.origin);
+        const productMatch = url.pathname.match(/-(\d{10,})\.html$/);
+        if (productMatch) {
+          const color = url.searchParams.get("color");
+          return color
+            ? `$httpsUrl('Product-Show','pid','${productMatch[1]}','color','${color}')$`
+            : `$httpsUrl('Product-Show','pid','${productMatch[1]}')$`;
+        }
+
+        if (/pacsun\.com$/i.test(url.hostname)) {
+          const cgid = inferCgidFromUrl(href);
+          if (cgid && cgid !== "style-guide") {
+            return `$httpsUrl('Search-Show','cgid','${cgid}')$`;
+          }
+        }
+      } catch {}
+
+      return href;
+    }
+
+    function linkHtml(label, href) {
+      return `<a class="links" target="_blank" href="${escapeAttr(buildGeneratedHref(href))}">${escapeHtml(label)}</a>`;
+    }
+
+    function renderInline(text) {
+      const value = String(text || "");
+      const pieces = [];
+      const markdownLink = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+      let cursor = 0;
+      let match;
+
+      while ((match = markdownLink.exec(value))) {
+        pieces.push(escapeHtml(value.slice(cursor, match.index)));
+        pieces.push(linkHtml(match[1], match[2]));
+        cursor = match.index + match[0].length;
+      }
+
+      pieces.push(
+        escapeHtml(value.slice(cursor)).replace(
+          /(https?:\/\/[^\s<)]+)/g,
+          (url) => linkHtml(url, url)
+        )
+      );
+
+      return pieces.join("");
+    }
+
+    function xmlDoc(text) {
+      return new DOMParser().parseFromString(text, "application/xml");
+    }
+
+    function xmlName(node) {
+      return String(node && (node.localName || node.tagName) || "").replace(/^.*:/, "");
+    }
+
+    function isXmlTag(node, name) {
+      return node && node.nodeType === 1 && xmlName(node) === name;
+    }
+
+    function childXmlElements(node, name) {
+      return Array.from(node ? node.childNodes : []).filter((child) => isXmlTag(child, name));
+    }
+
+    function descendantXmlElements(node, name) {
+      const found = [];
+
+      function walk(current) {
+        Array.from(current ? current.childNodes : []).forEach((child) => {
+          if (isXmlTag(child, name)) found.push(child);
+          if (child && child.childNodes && child.childNodes.length) walk(child);
+        });
+      }
+
+      walk(node);
+      return found;
+    }
+
+    function getRelationshipMap(doc) {
+      const map = {};
+      descendantXmlElements(doc, "Relationship").forEach((node) => {
+        map[node.getAttribute("Id")] = node.getAttribute("Target") || "";
+      });
+      return map;
+    }
+
+    function paragraphText(pNode, relMap) {
+      const chunks = [];
+      Array.from(pNode.childNodes).forEach((node) => {
+        walkNode(node, relMap, chunks);
+      });
+      return chunks.join("").replace(/\u00a0/g, " ").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+    }
+
+    function walkNode(node, relMap, chunks) {
+      if (!node || node.nodeType !== 1) return;
+
+      const tag = xmlName(node);
+      if (tag === "t") {
+        chunks.push(node.textContent || "");
+        return;
+      }
+
+      if (tag === "br") {
+        chunks.push("\n");
+        return;
+      }
+
+      if (tag === "tab") {
+        chunks.push(" ");
+        return;
+      }
+
+      if (tag === "hyperlink") {
+        const text = descendantXmlElements(node, "t").map((n) => n.textContent || "").join("").trim();
+        const relId = node.getAttribute("r:id");
+        const href = relMap[relId] || "";
+        if (href && text) {
+          chunks.push("[" + text + "](" + href + ")");
+        } else if (text) {
+          chunks.push(text);
+        }
+        return;
+      }
+
+      Array.from(node.childNodes).forEach((child) => walkNode(child, relMap, chunks));
+    }
+
+    function cellText(cellNode, relMap) {
+      return childXmlElements(cellNode, "p")
+        .map((p) => paragraphText(p, relMap))
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    function tableToRows(tblNode, relMap) {
+      const rows = [];
+      childXmlElements(tblNode, "tr").forEach((rowNode) => {
+        const cells = childXmlElements(rowNode, "tc").map((cell) => cellText(cell, relMap));
+        if (cells.some(Boolean)) rows.push(cells);
+      });
+      return rows;
+    }
+
+    function tableToObject(tblNode, relMap) {
+      const rows = tableToRows(tblNode, relMap);
+      const object = {};
+      rows.forEach((cells) => {
+        if (cells.length < 2) return;
+        const key = cells[0].replace(/\s+/g, " ").trim();
+        const value = cells.slice(1).join("\n").trim();
+        if (key) object[key] = value;
+      });
+      return object;
+    }
+
+    function isListParagraph(pNode) {
+      return descendantXmlElements(pNode, "numPr").length > 0;
+    }
+
+    function parseBodyBlocks(paragraphs) {
+      const blocks = [];
+      let currentList = null;
+
+      const flushList = () => {
+        if (currentList && currentList.items.length) {
+          blocks.push(currentList);
+        }
+        currentList = null;
+      };
+
+      paragraphs.forEach((item) => {
+        if (item.type === "table") {
+          flushList();
+          blocks.push({ type: "table", rows: item.rows });
+          return;
+        }
+
+        const text = item.text.trim();
+        if (!text) return;
+        if (/^(Top of Form|Bottom of Form)$/i.test(text)) return;
+
+        const fieldMatch = text.match(/^(Optimized Page Title|Meta Description|SEO-Friendly URL|LLM Snapshot Summary):\s*([\s\S]*)$/i);
+        if (fieldMatch) {
+          flushList();
+          const label = fieldMatch[1];
+          const value = fieldMatch[2].trim();
+          blocks.push(value ? { type: "field", label, value } : { type: "marker", text: label + ":" });
+          return;
+        }
+
+        if (/^Structured Data \(JSON-LD\):\s*$/i.test(text)) {
+          flushList();
+          blocks.push({ type: "marker", text: "Structured Data (JSON-LD):" });
+          return;
+        }
+
+        const hMatch = text.match(/^(H[1-6]):\s*(.+)$/i);
+        if (hMatch) {
+          flushList();
+          blocks.push({
+            type: hMatch[1].toLowerCase(),
+            text: hMatch[2].trim()
+          });
+          return;
+        }
+
+        if (item.isList) {
+          if (!currentList) currentList = { type: "ul", items: [] };
+          currentList.items.push(text);
+          return;
+        }
+
+        flushList();
+        blocks.push({ type: "p", text });
+      });
+
+      flushList();
+      return blocks;
+    }
+
+    function extractDocData(documentXml, relationshipsXml) {
+      const doc = xmlDoc(documentXml);
+      const relMap = relationshipsXml ? getRelationshipMap(xmlDoc(relationshipsXml)) : {};
+      const body = descendantXmlElements(doc, "body")[0];
+      const children = Array.from(body ? body.childNodes : []).filter((node) => node.nodeType === 1);
+
+      const tables = [];
+      const flow = [];
+      const rawParagraphs = [];
+
+      children.forEach((node) => {
+        if (isXmlTag(node, "tbl")) {
+          const rows = tableToRows(node, relMap);
+          tables.push(tableToObject(node, relMap));
+          flow.push({ type: "table", rows });
+          return;
+        }
+
+        if (isXmlTag(node, "p")) {
+          const item = {
+            type: "p",
+            text: paragraphText(node, relMap),
+            isList: isListParagraph(node)
+          };
+          rawParagraphs.push(item);
+          flow.push(item);
+        }
+      });
+
+      const topTable = tables[0] || {};
+      const devTable = tables[1] || {};
+      const startIndex = flow.findIndex((item) => item.type === "p" && /^FOR DEV$/i.test(item.text));
+      const afterDev = flow.slice(startIndex >= 0 ? startIndex + 1 : 0);
+      const articleStartIndex = afterDev.findIndex((item) => item.type === "p" && /^H1:\s*/i.test(item.text));
+      const contentParagraphs = afterDev
+        .slice(articleStartIndex >= 0 ? articleStartIndex : 0)
+        .filter((item) => item.type === "table" || item.text);
+
+      const meta = {};
+      const contentBlocks = [];
+      let jsonLines = [];
+      let activeMarker = "";
+
+      parseBodyBlocks(contentParagraphs).forEach((block) => {
+        if (block.type === "field") {
+          if (/^Optimized Page Title$/i.test(block.label)) meta.pageTitle = block.value;
+          if (/^Meta Description$/i.test(block.label)) meta.metaDescription = block.value;
+          if (/^SEO-Friendly URL$/i.test(block.label)) meta.seoUrl = block.value;
+          if (/^LLM Snapshot Summary$/i.test(block.label)) meta.snapshotSummary = block.value;
+          activeMarker = "";
+          return;
+        }
+
+        if (block.type === "marker") {
+          activeMarker = block.text;
+          return;
+        }
+
+        if (/^Optimized Page Title:$/i.test(activeMarker)) {
+          if (block.text) meta.pageTitle = block.text;
+          activeMarker = "";
+          return;
+        }
+
+        if (/^Meta Description:$/i.test(activeMarker)) {
+          if (block.text) meta.metaDescription = block.text;
+          activeMarker = "";
+          return;
+        }
+
+        if (/^SEO-Friendly URL:$/i.test(activeMarker)) {
+          if (block.text) meta.seoUrl = block.text;
+          activeMarker = "";
+          return;
+        }
+
+        if (/^LLM Snapshot Summary:$/i.test(activeMarker)) {
+          if (block.text) meta.snapshotSummary = block.text;
+          activeMarker = "";
+          return;
+        }
+
+        if (/^Structured Data \(JSON-LD\):$/i.test(activeMarker)) {
+          if (block.type === "p" && block.text) {
+            jsonLines.push(block.text);
+            return;
+          }
+          if (block.type !== "p") {
+            activeMarker = "";
+          }
+        }
+
+        contentBlocks.push(block);
+      });
+
+      if (jsonLines.length) {
+        meta.jsonLd = jsonLines.join("\n");
+      }
+
+      return {
+        brief: topTable,
+        dev: devTable,
+        meta,
+        blocks: contentBlocks,
+        paragraphCount: contentParagraphs.length
+      };
+    }
+
+    function buildMetaSummary(parsed, cid) {
+      const summary = [
+        ["Content Topic", parsed.brief["Content Topic"] || ""],
+        ["Final Title", parsed.dev["Final Title"] || ""],
+        ["CID", cid],
+        ["Live Date", parsed.dev["Live Date"] || ""],
+        ["Page Title", parsed.meta.pageTitle || ""],
+        ["Meta Description", parsed.meta.metaDescription || ""],
+        ["SEO URL", parsed.meta.seoUrl || ""]
+      ].filter(([, value]) => value);
+
+      return summary.map(([label, value]) => `
+        <div class="kv-item">
+          <span class="label">${escapeHtml(label)}</span>
+          <div>${escapeHtml(value)}</div>
+        </div>
+      `).join("");
+    }
+
+    function parseBriefDate(value) {
+      const raw = String(value || "").trim();
+      const match = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      const now = new Date();
+
+      if (!match) {
+        return {
+          year: now.getFullYear(),
+          month: now.getMonth() + 1,
+          day: now.getDate()
+        };
+      }
+
+      let year = Number(match[3]);
+      if (year < 100) year += 2000;
+
+      return {
+        year,
+        month: Number(match[1]),
+        day: Number(match[2])
+      };
+    }
+
+    function formatDisplayDate(parts) {
+      const date = new Date(parts.year, parts.month - 1, parts.day);
+      return date.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+
+    function formatIsoDate(parts) {
+      return [
+        parts.year,
+        String(parts.month).padStart(2, "0"),
+        String(parts.day).padStart(2, "0")
+      ].join("-");
+    }
+
+    function inferHeroImagePath(parsed, dateParts) {
+      const topic = parsed.brief["Content Topic"] || parsed.dev["Final Title"] || parsed.brief["Prospective Title"] || "article";
+      const words = slugify(topic).toLowerCase().split("-").filter(Boolean);
+      const keyword = words[words.length - 1] || "article";
+      return `${String(dateParts.month).padStart(2, "0")}/${String(dateParts.day).padStart(2, "0")}/${keyword}-desk.jpg`;
+    }
+
+    function buildHeroPicture(heroFolder, heroImagePath) {
+      const folder = String(heroFolder || "2026/lp/styleguide/").replace(/\/?$/, "/");
+      const image = String(heroImagePath || "").replace(/^\/+/, "");
+
+      return `            <picture class="blog-hero">
+                <source srcset="${folder}${image}?$staticlink$?" class="full" media="(min-width: 768px)"
+                    width="940" height="400" />
+                <source
+                    srcset="$include('Image-GetURL', 'width', '768', 'height', '326', 'folder', '${folder}', 'mode', 'fit', 'image', '${image}')$"
+                    class="full" media="(min-width: 375px)" width="768" height="326" />
+                <img src="$include('Image-GetURL', 'width', '375', 'height','159', 'folder', '${folder}', 'mode','fit' ,'image', '${image}')$"
+                    class="full" width="940" height="400" />
+            </picture>`;
+    }
+
+    function buildTableHtml(rows) {
+      if (!rows || !rows.length) return "";
+      return [
+        "                    <table>",
+        ...rows.map((row, rowIndex) => {
+          const cells = row.map((cell) => {
+            const content = rowIndex === 0
+              ? `<strong>${renderInline(cell)}</strong>`
+              : renderInline(cell);
+            return `                            <td>${content}</td>`;
+          }).join("\n");
+
+          return `                        <tr>\n${cells}\n                        </tr>`;
+        }),
+        "                    </table>"
+      ].join("\n");
+    }
+
+    function cleanJsonLdInput(value) {
+      return String(value || "")
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, "$2")
+        .trim();
+    }
+
+    function buildJsonLd(parsed, generated, isoDate) {
+      const raw = cleanJsonLdInput(parsed.meta.jsonLd);
+      const pageUrl = parsed.meta.seoUrl
+        ? "https://www.pacsun.com/" + parsed.meta.seoUrl.replace(/^\/+/, "")
+        : "https://www.pacsun.com/" + generated.cid;
+
+      if (!raw) return "";
+
+      try {
+        const data = JSON.parse(raw);
+        if (!data.datePublished) data.datePublished = isoDate;
+        if (!data.dateModified) data.dateModified = isoDate;
+        data.mainEntityOfPage = data.mainEntityOfPage || {};
+        data.mainEntityOfPage["@type"] = data.mainEntityOfPage["@type"] || "WebPage";
+        data.mainEntityOfPage["@id"] = data.mainEntityOfPage["@id"] || pageUrl;
+        return JSON.stringify(data, null, 2);
+      } catch {
+        return raw;
+      }
+    }
+
+    function buildArticleHtml(parsed) {
+      const finalTitle = parsed.dev["Final Title"] || parsed.brief["Prospective Title"] || parsed.brief["Content Topic"] || "Untitled Article";
+      const slug = slugify(finalTitle);
+      const cid = (els.slugPrefix.value || "").trim() + slug;
+      const dateParts = parseBriefDate(parsed.dev["Live Date"]);
+      const displayDate = formatDisplayDate(dateParts);
+      const isoDate = formatIsoDate(dateParts);
+      const heroFolder = (els.heroFolder.value || "2026/lp/styleguide/").trim();
+      const heroImagePath = (els.heroImagePath.value || inferHeroImagePath(parsed, dateParts)).trim();
+      const generated = { cid, slug };
+
+      const bodyParts = [];
+
+      parsed.blocks.forEach((block) => {
+        if (block.type === "h1") {
+          return;
+        }
+
+        if (block.type === "h2" || block.type === "h3" || block.type === "h4" || block.type === "h5" || block.type === "h6") {
+          bodyParts.push(`                    <${block.type}>${renderInline(block.text)}</${block.type}>`);
+          return;
+        }
+
+        if (block.type === "p") {
+          bodyParts.push(`                    <p>\n                        ${renderInline(block.text)}\n                    </p>`);
+          return;
+        }
+
+        if (block.type === "ul") {
+          bodyParts.push("                    <ul>");
+          block.items.forEach((item) => {
+            bodyParts.push(`                        <li>${renderInline(item)}</li>`);
+          });
+          bodyParts.push("                    </ul>");
+          return;
+        }
+
+        if (block.type === "table") {
+          bodyParts.push(buildTableHtml(block.rows));
+        }
+      });
+
+      const jsonLd = buildJsonLd(parsed, generated, isoDate);
+
+      const jsonLdScript = jsonLd
+        ? `\n<script type="application/ld+json">\n\n${jsonLd}\n\n<\/script>`
+        : "";
+
+      const html = `<link rel="stylesheet" href="2026/lp/blog/blog.css?$staticlink$?">
+<style>
+    .blog-main ul,
+    .blog-main ol {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+
+    .blog-main li {
+        margin: 0 !important;
+        padding: 0;
+    }
+
+    .blog-main table {
+        width: 100%;
+    }
+
+    .blog-main table,
+    .blog-main th,
+    .blog-main td {
+        border: 1px solid black;
+        border-collapse: separate;
+        border-spacing: 4px;
+    }
+
+    .blog-main td {
+        padding: .25rem;
+    }
+
+    .blog-main h3,
+    .blog-main li::marker {
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 36px;
+        letter-spacing: -0.25px;
+        margin: 0;
+    }
+</style>
+
+
+<div class="blog-container">
+    <div class="blog-main">
+        <div class="blog-main-container justify-content-center align-items-center d-flex flex-column mx-auto">
+            <!-- Hero Image -->
+${buildHeroPicture(heroFolder, heroImagePath)}
+
+            <div>
+                <p class="m-0 blog-date">
+                    ${escapeHtml(displayDate)}
+                </p>
+
+                <h1 class="blog-title">${renderInline(finalTitle)}</h1>
+
+                <br>
+
+                <article>
+${bodyParts.join("\n\n")}
+                </article>
+            </div>
+        </div>
+    </div>
+</div>${jsonLdScript}`;
+
+      return {
+        cid,
+        slug,
+        html: html.trim()
+      };
+    }
+
+    function buildMetaText(parsed, generated) {
+      return [
+        `CID: ${generated.cid}`,
+        `Final Title: ${parsed.dev["Final Title"] || ""}`,
+        `Live Date: ${parsed.dev["Live Date"] || ""}`,
+        `Page Title: ${parsed.meta.pageTitle || ""}`,
+        `Meta Description: ${parsed.meta.metaDescription || ""}`,
+        `SEO URL: ${parsed.meta.seoUrl || ""}`,
+        "",
+        "JSON-LD:",
+        parsed.meta.jsonLd || "(none found)",
+        "",
+        "LLM Snapshot Summary:",
+        parsed.meta.snapshotSummary || "(none found)"
+      ].join("\n");
+    }
+
+    function updateCounts(parsed, generated) {
+      const sectionCount = parsed.blocks.filter((block) => /^h[1-6]$/.test(block.type)).length;
+      const bulletCount = parsed.blocks.filter((block) => block.type === "ul").reduce((sum, block) => sum + block.items.length, 0);
+      const linkCount = (state.html.match(/<a\b/gi) || []).length;
+      els.sectionCount.textContent = String(sectionCount);
+      els.bulletCount.textContent = String(bulletCount);
+      els.linkCount.textContent = String(linkCount);
+      els.slugPreview.textContent = generated.cid || "-";
+    }
+
+    function renderPreview(html) {
+      els.previewPane.innerHTML = html || '<p class="hint">No article HTML generated yet.</p>';
+    }
+
+    function renderParsed(parsed) {
+      els.parsedOutput.textContent = JSON.stringify(parsed, null, 2);
+    }
+
+    function renderOutputs(parsed) {
+      const generated = buildArticleHtml(parsed);
+      const metaText = buildMetaText(parsed, generated);
+
+      state.parsed = parsed;
+      state.html = generated.html;
+      state.meta = metaText;
+
+      els.htmlOutput.textContent = generated.html;
+      els.metaOutput.textContent = metaText;
+      els.metaSummary.innerHTML = buildMetaSummary(parsed, generated.cid);
+      renderPreview(generated.html);
+      renderParsed(parsed);
+      updateCounts(parsed, generated);
+      setStatus("Brief parsed. Review the preview and copy the markup when it looks right.", "success");
+    }
+
+    async function parseArrayBuffer(buffer) {
+      if (!window.JSZip) {
+        throw new Error("JSZip did not load.");
+      }
+
+      const zip = await JSZip.loadAsync(buffer);
+      const documentXml = await zip.file("word/document.xml").async("string");
+      const relationshipsFile = zip.file("word/_rels/document.xml.rels");
+      const relationshipsXml = relationshipsFile ? await relationshipsFile.async("string") : "";
+      return extractDocData(documentXml, relationshipsXml);
+    }
+
+    async function parseSelectedFile() {
+      const file = els.file.files[0];
+      if (!file) {
+        setStatus("Choose a .docx file first.", "error");
+        return;
+      }
+
+      setStatus("Parsing brief…");
+      const buffer = await file.arrayBuffer();
+      const parsed = await parseArrayBuffer(buffer);
+      renderOutputs(parsed);
+    }
+
+    function chooseBrief() {
+      els.file.click();
+      setStatus("Choose the brief file, then click Parse Brief.");
+    }
+
+    async function copyText(text, label) {
+      if (!text) {
+        setStatus("Nothing to copy yet.", "error");
+        return;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const area = document.createElement("textarea");
+          area.value = text;
+          area.style.position = "fixed";
+          area.style.opacity = "0";
+          document.body.appendChild(area);
+          area.focus();
+          area.select();
+          document.execCommand("copy");
+          document.body.removeChild(area);
+        }
+        setStatus(label + " copied to clipboard.", "success");
+      } catch (error) {
+        setStatus("Clipboard copy failed. You can still copy from the output panel manually.", "error");
+      }
+    }
+
+    function setTab(name) {
+      els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
+      els.panels.forEach((panel) => panel.classList.toggle("hidden", panel.dataset.panel !== name));
+    }
+
+    els.tabs.forEach((tab) => {
+      tab.addEventListener("click", () => setTab(tab.dataset.tab));
+    });
+
+    els.file.addEventListener("change", async () => {
+      try {
+        await parseSelectedFile();
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "Parsing failed.", "error");
+      }
+    });
+
+    els.parseBtn.addEventListener("click", async () => {
+      try {
+        await parseSelectedFile();
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "Parsing failed.", "error");
+      }
+    });
+
+    els.loadSampleBtn.addEventListener("click", async () => {
+      try {
+        chooseBrief();
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "Could not open the file picker.", "error");
+      }
+    });
+
+    els.copyHtmlBtn.addEventListener("click", () => copyText(state.html, "HTML"));
+    els.copyMetaBtn.addEventListener("click", () => copyText(state.meta, "Meta"));
+
+    [els.slugPrefix, els.heroFolder, els.heroImagePath].forEach((input) => {
+      input.addEventListener("input", () => {
+        if (state.parsed) {
+          renderOutputs(state.parsed);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
